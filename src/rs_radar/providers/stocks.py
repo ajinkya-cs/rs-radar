@@ -31,7 +31,7 @@ LARGE_CAPS = tuple(
     PLTR PG BAC ABBV CVX KO GE AMD CSCO PM UNH WFC IBM MS GS CRM ABT AXP MCD LIN
     MRK T DIS RTX PEP CAT INTU UBER VZ TMO NOW BKNG QCOM TXN ISRG C BLK SCHW AMGN
     BA SPGI ADBE NEE LOW PFE GILD HON DHR UNP AMAT BMY MU COF DE LMT MDT SBUX ADP
-    MO INTC CMCSA GD NKE USB MMM BK TGT CL CVS DUK SO UPS FDX MDLZ EMR COP AMT PYPL
+    MO INTC CMCSA GD NKE USB MMM TGT CL CVS DUK SO UPS FDX MDLZ EMR COP AMT PYPL
     """.split()
 )
 
@@ -52,9 +52,9 @@ class StocksProvider:
         return Instrument(BENCHMARK, Market.STOCKS, "yahoo", BENCHMARK, name="SPDR S&P 500 ETF")
 
     async def universe(self, size: int) -> list[Instrument]:
-        if not 1 <= size <= len(LARGE_CAPS):
-            raise ValueError(f"stocks universe size must be between 1 and {len(LARGE_CAPS)}")
-        return [Instrument(s, Market.STOCKS, "yahoo", s) for s in LARGE_CAPS[:size]]
+        if size < 1:
+            raise ValueError("stocks universe size must be at least 1")
+        return [Instrument(s, Market.STOCKS, "yahoo", s) for s in LARGE_CAPS[:size]]  # clamps to the list
 
     async def resolve(self, symbols: Sequence[str]) -> tuple[list[Instrument], list[str]]:
         resolved, unknown = [], []

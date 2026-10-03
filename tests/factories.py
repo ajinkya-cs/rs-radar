@@ -56,3 +56,9 @@ def market(
 def uptrend(n: int = 60, *, drift: float = 0.004, seed: int = 3, step: int = 14_400) -> list[Candle]:
     rets = [drift + r for r in returns(n, seed=seed, vol=0.006)]
     return build(rets, step=step)
+
+
+def rescale(candles: Sequence[Candle], last_close: float) -> list[Candle]:
+    """Scale a series so it ends at ``last_close`` (keeps trend and 1m data on the same price level)."""
+    k = last_close / candles[-1].close
+    return [Candle(c.ts, c.open * k, c.high * k, c.low * k, c.close * k, c.volume) for c in candles]
