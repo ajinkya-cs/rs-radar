@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Mapping
 from types import TracebackType
 from typing import Any
@@ -11,6 +12,14 @@ import httpx
 
 from rs_radar import __version__
 from rs_radar.errors import DataSourceError
+
+
+def quiet_transport_logs() -> None:
+    """httpx logs every request URL at INFO. Entry points call this: it's noise in MCP client logs, and
+    URLs can carry secrets (webhook tokens) that must never reach a log file."""
+    for name in ("httpx", "httpcore"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+
 
 RETRYABLE_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504})
 MAX_RETRY_AFTER_S = 10.0

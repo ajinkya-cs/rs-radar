@@ -7,7 +7,8 @@ import pytest
 from rs_radar.config import Settings
 from rs_radar.models import Market
 from rs_radar.storage import read_json, write_json
-from rs_radar.watchlist import Watchlist, normalize
+from rs_radar.symbols import normalize, normalize_all
+from rs_radar.watchlist import Watchlist
 
 
 def test_add_normalizes_dedupes_and_rejects_garbage(tmp_path: Path) -> None:
@@ -45,6 +46,10 @@ def test_cap(tmp_path: Path) -> None:
 @pytest.mark.parametrize(("raw", "expected"), [("$eth", "ETH"), ("sol/usdc", "SOL"), ("AAPL", "AAPL")])
 def test_normalize(raw: str, expected: str) -> None:
     assert normalize(raw) == expected
+
+
+def test_normalize_all_dedupes_in_order() -> None:
+    assert normalize_all(["$sol", "SOL/USDT", "eth", " "]) == ["SOL", "ETH"]
 
 
 def test_storage_survives_corruption(tmp_path: Path) -> None:

@@ -24,7 +24,7 @@ from typing import Any, Literal
 
 from rs_radar.config import Settings, build_scanners
 from rs_radar.errors import RsRadarError
-from rs_radar.http import HttpClient
+from rs_radar.http import HttpClient, quiet_transport_logs
 from rs_radar.models import Market
 from rs_radar.notify import desktop, webhook
 from rs_radar.scanner import Scanner
@@ -368,6 +368,7 @@ def status(settings: Settings, *, alerts: int = 5) -> dict[str, Any]:
 def run(settings: Settings) -> None:
     """Entry point of the detached process (``rs-radar bot run``)."""
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    quiet_transport_logs()
     paths = BotPaths(settings.bot_dir)
     config = BotConfig.from_json(read_json(paths.config, {}))
     paths.pid.parent.mkdir(parents=True, exist_ok=True)

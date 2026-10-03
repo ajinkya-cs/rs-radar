@@ -8,17 +8,10 @@ from pathlib import Path
 
 from rs_radar.models import Market
 from rs_radar.storage import read_json, write_json
+from rs_radar.symbols import normalize
 
 MAX_SYMBOLS = 200
 _SYMBOL = re.compile(r"^[A-Z0-9][A-Z0-9.\-]{0,14}$")
-
-
-def normalize(symbol: str) -> str:
-    """Canonical form: uppercase, quote currency and ``$`` prefix stripped (``$sol/usdt`` -> ``SOL``)."""
-    s = symbol.strip().upper().lstrip("$")
-    if "/" in s or "_" in s:
-        return re.sub(r"[/_-]?(USDT|USDC|USD|PERP)$", "", s)
-    return s
 
 
 class Watchlist:

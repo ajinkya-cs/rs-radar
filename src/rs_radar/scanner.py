@@ -25,6 +25,7 @@ from rs_radar.signals import (
     trade_plan,
     trend,
 )
+from rs_radar.symbols import normalize_all
 
 HISTORY_BARS = 300
 TREND_BARS = 120
@@ -113,9 +114,10 @@ class Scanner:
         bench = await self.provider.benchmark()
         skipped: dict[str, str] = {}
         instruments = [] if symbols else await self.provider.universe(size)
-        extra = [s for s in (*(symbols or ()), *include) if s.upper() not in {i.symbol for i in instruments}]
+        in_universe = {i.symbol for i in instruments}
+        extra = [s for s in normalize_all((*(symbols or ()), *include)) if s not in in_universe]
         if extra:
-            resolved, unknown = await self.provider.resolve(list(dict.fromkeys(extra)))
+            resolved, unknown = await self.provider.resolve(extra)
             instruments += [i for i in resolved if i.symbol != bench.symbol]
             skipped.update(dict.fromkeys(unknown, "unknown symbol"))
 
@@ -200,7 +202,7 @@ class Scanner:
             )
         skipped: dict[str, str] = {}
         if symbols:
-            instruments, unknown = await self.provider.resolve(symbols)
+            instruments, unknown = await self.provider.resolve(normalize_all(symbols))
             skipped.update(dict.fromkeys(unknown, "unknown symbol"))
         else:
             instruments = [await self.provider.benchmark(), *await self.provider.universe(size)]
@@ -253,7 +255,7 @@ class Scanner:
 
     async def validate(self, symbols: Sequence[str]) -> tuple[list[str], dict[str, str]]:
         """Resolve symbols and prove each has live data. Returns ``(valid_symbols, rejected -> reason)``."""
-        instruments, unknown = await self.provider.resolve(symbols)
+        instruments, unknown = await self.provider.resolve(normalize_all(symbols))
         rejected = dict.fromkeys(unknown, "unknown symbol")
         results = await asyncio.gather(
             *(_settle(self.provider.candles(i, Interval.D1, 2)) for i in instruments)
@@ -289,7 +291,7 @@ class Scanner:
         return Row(inst, aligned, returns, excess, m), ""
 
     async def _resolve_one(self, symbol: str) -> Instrument:
-        resolved, _ = await self.provider.resolve([symbol])
+        resolved, _ = await self.provider.resolve(normalize_all([symbol]))
         if not resolved:
             raise UnknownSymbolError(f"{symbol.upper()} is not available in {self.market.value}")
         return resolved[0]
