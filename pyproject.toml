@@ -65,6 +65,7 @@ ignore = [
     "PLR0913",  # analytics functions legitimately take many parameters
     "PLR2004",  # thresholds are named where they matter; tests use literal fixtures
     "S603",     # subprocess calls use fixed argv lists, never a shell
+    "SIM905",   # whitespace-split word lists keep long symbol tables readable
 ]
 
 [tool.ruff.lint.per-file-ignores]
