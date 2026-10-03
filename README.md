@@ -4,6 +4,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-server-8A2BE2)](https://modelcontextprotocol.io)
+[![Tip jar](https://img.shields.io/badge/tip%20jar-BTC%20%C2%B7%20ETH%20%C2%B7%20SOL-F7931A)](#support)
 
 **Relative-strength & momentum radar for crypto and US stocks, as an MCP server.**
 
@@ -207,6 +208,19 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions and how to add a provider
 - [ ] Windows toast notifications and a Telegram notifier
 - [ ] Short setups (relative weakness) alongside longs
 - [ ] Backtest harness to calibrate confidence thresholds on recorded data
+
+## Support
+
+rs-radar is free and MIT-licensed. If it helped you catch a move, a tip keeps it maintained. ☕
+
+| Coin | Network | Address |
+|---|---|---|
+| **BTC** | Bitcoin | `bc1qetx8qf06jcsh4hw38t80g86er5xgmhkgeyncwc` |
+| **ETH**, USDC, USDT | Ethereum (ERC-20) | `0x01E49D471D26f490A75c35bd959e5f53F5Ef0F70` |
+| **SOL**, USDC | Solana (SPL) | `B9sZeEjQjVpmjUV7yXQQumZ9jnorBH8go6EHZiMC5uFj` |
+
+Please double-check the network before sending: funds sent on the wrong network can't be recovered.
+Stars, bug reports and PRs are just as appreciated.
 
 ## Disclaimer
 
