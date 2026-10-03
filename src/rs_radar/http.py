@@ -48,20 +48,36 @@ class HttpClient:
         params: Mapping[str, str | int] | None = None,
         headers: Mapping[str, str] | None = None,
     ) -> Any:
+        return await self._request("GET", url, params=params, headers=headers)
+
+    async def post_json(self, url: str, payload: Any) -> Any:
+        return await self._request("POST", url, json=payload)
+
+    async def _request(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        headers: Mapping[str, str] | None = None,
+        json: Any = None,
+    ) -> Any:
         last_error = ""
         last_status: int | None = None
         for attempt in range(self._retries + 1):
             try:
                 async with self._semaphore:
-                    response = await self._client.get(url, params=params, headers=headers)
+                    response = await self._client.request(
+                        method, url, params=params, headers=headers, json=json
+                    )
             except httpx.TransportError as exc:
-                last_error = f"{type(exc).__name__}: {exc}"
+                last_error = f"{_host(url)}: {type(exc).__name__}"
                 delay = self._backoff * 2**attempt
             else:
                 if response.status_code not in RETRYABLE_STATUS:
                     if response.is_error:
                         raise DataSourceError(_describe(url, response), status=response.status_code)
-                    return response.json()
+                    return response.json() if response.content else None
                 last_error, last_status = _describe(url, response), response.status_code
                 delay = _retry_after(response) or self._backoff * 2**attempt
             if attempt < self._retries:
@@ -82,9 +98,13 @@ class HttpClient:
         await self.aclose()
 
 
+def _host(url: str) -> str:
+    # Only ever surface the host: full URLs can embed secrets (e.g. webhook tokens).
+    return httpx.URL(url).host
+
+
 def _describe(url: str, response: httpx.Response) -> str:
-    host = httpx.URL(url).host
-    return f"{host} returned HTTP {response.status_code}"
+    return f"{_host(url)} returned HTTP {response.status_code}"
 
 
 def _retry_after(response: httpx.Response) -> float | None:

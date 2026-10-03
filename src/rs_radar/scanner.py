@@ -99,15 +99,25 @@ class Scanner:
     def market(self) -> Market:
         return self.provider.market
 
-    async def snapshot(self, *, size: int = 200, symbols: Sequence[str] | None = None) -> Snapshot:
-        """Fetch and analyse the universe (or ``symbols``) against the benchmark."""
+    async def snapshot(
+        self,
+        *,
+        size: int = 200,
+        symbols: Sequence[str] | None = None,
+        include: Sequence[str] = (),
+    ) -> Snapshot:
+        """Analyse the top-``size`` universe against the benchmark.
+
+        ``symbols`` replaces the universe (e.g. a watchlist); ``include`` adds symbols to it.
+        """
         bench = await self.provider.benchmark()
         skipped: dict[str, str] = {}
-        if symbols:
-            instruments, unknown = await self.provider.resolve(symbols)
+        instruments = [] if symbols else await self.provider.universe(size)
+        extra = [s for s in (*(symbols or ()), *include) if s.upper() not in {i.symbol for i in instruments}]
+        if extra:
+            resolved, unknown = await self.provider.resolve(list(dict.fromkeys(extra)))
+            instruments += [i for i in resolved if i.symbol != bench.symbol]
             skipped.update(dict.fromkeys(unknown, "unknown symbol"))
-        else:
-            instruments = await self.provider.universe(size)
 
         bench_candles, results = await asyncio.gather(
             self.provider.candles(bench, Interval.M1, HISTORY_BARS),
@@ -130,8 +140,16 @@ class Scanner:
                 rows.append(row)
 
         as_of = bench_candles[-1].ts if bench_candles else 0
-        live = self._clock() - as_of < STALE_AFTER_S and is_contiguous(bench_candles, 16, 60)
+        live = bool(bench_candles) and self._live(bench_candles)
         return Snapshot(self.market, bench, bench_candles, bench_returns, rows, skipped, as_of, live)
+
+    async def is_live(self) -> bool:
+        """Cheap pre-check (one request): is the benchmark trading right now?"""
+        candles = await self.provider.candles(await self.provider.benchmark(), Interval.M1, 20)
+        return bool(candles) and self._live(candles)
+
+    def _live(self, bench_candles: Sequence[Candle]) -> bool:
+        return self._clock() - bench_candles[-1].ts < STALE_AFTER_S and is_contiguous(bench_candles, 16, 60)
 
     async def signals(self, snap: Snapshot, *, min_confidence: int = 85) -> list[Signal]:
         """High-confidence long setups. Trend data is fetched only for rows that passed the fast gates."""
