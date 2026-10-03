@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+
+# Tooling
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local secrets & runtime state (never commit)
+.env
+.env.*
+*.pem
+rs-radar-home/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
