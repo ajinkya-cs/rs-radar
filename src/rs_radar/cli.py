@@ -218,14 +218,28 @@ def _since(args: argparse.Namespace, settings: Settings) -> None:
 def _plan(args: argparse.Namespace, settings: Settings) -> None:
     async def go(sc: Scanner) -> dict[str, Any]:
         inst, t, p = await sc.plan(args.symbol)
-        return {"symbol": inst.symbol, "trend": presenters.trend(t), "plan": presenters.plan(p)}
+        timeframe = sc.provider.trend_interval.value
+        return {
+            "symbol": inst.symbol,
+            "timeframe": timeframe,
+            "trend": presenters.trend(t),
+            "plan": presenters.plan(p),
+        }
 
     data = _with_scanner(args.market, settings, go)
     if args.json:
         return _print_json(data)
-    print(f"{data['symbol']}  trend: {data['trend']}")
-    for k, v in data["plan"].items():
-        print(f"  {k:>14}: {v}")
+    t, p = data["trend"], data["plan"]
+    print(
+        f"{data['symbol']} ({data['timeframe']}) {'uptrend' if t['uptrend'] else 'NOT in an uptrend'} | "
+        f"EMA20 {t['ema20']}  EMA50 {t['ema50']} | ATR {t['atr']} ({t['atr_pct']}%) | "
+        f"{t['extension_atr']:+} ATR from EMA20"
+    )
+    print(
+        f"entry {p['entry']} (max {p['max_entry']})  SL {p['stop_loss']} ({p['stop_basis']})  "
+        f"TP1 {p['take_profit_1']}  TP2 {p['take_profit_2']}  risk {p['risk_pct']}%"
+    )
+    print(p["management"])
     return None
 
 
