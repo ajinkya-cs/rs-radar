@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a new signal, data provider or tool
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: For new signals, describe the logic and why it adds information the existing ones don't.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

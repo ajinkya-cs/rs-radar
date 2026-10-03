@@ -1,0 +1,35 @@
+name: Bug report
+description: Something doesn't work as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include the tool or command you ran and the output you got.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: rs-radar version
+      placeholder: rs-radar --version
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: MCP client and OS
+      placeholder: Claude Code 2.x on macOS 15 / Claude Desktop on Ubuntu 24.04
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: For bot issues, attach the relevant part of `bot.log` (path is shown by `rs-radar bot status`). Remove any webhook URLs or API keys first.
+      render: text
